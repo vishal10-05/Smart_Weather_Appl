@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI/CD Pipeline - Smart Weather App
 
 on:
   push:
@@ -11,23 +11,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # Step 1: Checkout code
     - name: Checkout code
       uses: actions/checkout@v3
 
+    # Step 2: Set up Node.js
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18'
 
+    # Step 3: Install Node.js dependencies
     - name: Install dependencies
       run: npm install
 
+    # Step 4: Run tests
     - name: Run tests
       run: npm test
 
+    # Step 5: Build Docker image
     - name: Build Docker image
-      run: docker build -t devops-app .
+      run: docker build -t smart-weather-app .
 
+    # Step 6: Log in to Azure Container Registry
     - name: Log in to Azure Container Registry
       uses: azure/docker-login@v1
       with:
@@ -35,19 +41,27 @@ jobs:
         username: ${{ secrets.ACR_USERNAME }}
         password: ${{ secrets.ACR_PASSWORD }}
 
+    # Step 7: Push Docker image to ACR
     - name: Push Docker image
       run: |
-        docker tag devops-app devopsacr.azurecr.io/devops-app:latest
-        docker push devopsacr.azurecr.io/devops-app:latest
+        docker tag smart-weather-app devopsacr.azurecr.io/smart-weather-app:latest
+        docker push devopsacr.azurecr.io/smart-weather-app:latest
 
-    - name: Deploy to AKS
+    # Step 8: Set Kubernetes context for AKS
+    - name: Set AKS context
       uses: azure/aks-set-context@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
         cluster-name: devops-aks
         resource-group: devops-rg
 
-    - name: Run kubectl
+    # Step 9: Deploy app to AKS
+    - name: Deploy to AKS
       run: |
         kubectl apply -f k8s/deployment.yml
         kubectl apply -f k8s/service.yml
+
+    # Step 10: Verify deployment rollout
+    - name: Verify deployment
+      run: |
+        kubectl rollout status deployment/smart-weather-app-deployment || true
