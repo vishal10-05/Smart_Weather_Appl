@@ -1,0 +1,53 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run tests
+      run: npm test
+
+    - name: Build Docker image
+      run: docker build -t devops-app .
+
+    - name: Log in to Azure Container Registry
+      uses: azure/docker-login@v1
+      with:
+        login-server: devopsacr.azurecr.io
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
+
+    - name: Push Docker image
+      run: |
+        docker tag devops-app devopsacr.azurecr.io/devops-app:latest
+        docker push devopsacr.azurecr.io/devops-app:latest
+
+    - name: Deploy to AKS
+      uses: azure/aks-set-context@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        cluster-name: devops-aks
+        resource-group: devops-rg
+
+    - name: Run kubectl
+      run: |
+        kubectl apply -f k8s/deployment.yml
+        kubectl apply -f k8s/service.yml
