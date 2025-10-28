@@ -40,6 +40,9 @@ jobs:
         login-server: devopsacr.azurecr.io
         username: ${{ secrets.ACR_USERNAME }}
         password: ${{ secrets.ACR_PASSWORD }}
+      env:
+        ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+        ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
 
     # Step 7: Push Docker image to ACR
     - name: Push Docker image
