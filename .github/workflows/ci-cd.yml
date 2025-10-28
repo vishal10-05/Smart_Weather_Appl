@@ -35,10 +35,8 @@ jobs:
 
     # Step 6: Log in to Azure Container Registry
     - name: Log in to Azure Container Registry
-      uses: azure/docker-login@v2
-      with:
-        login-server: devopsacr.azurecr.io
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+      run: |
+        echo ${{ secrets.ACR_PASSWORD }} | docker login devopsacr.azurecr.io -u ${{ secrets.ACR_USERNAME }} --password-stdin
 
     # Step 7: Push Docker image to ACR
     - name: Push Docker image
