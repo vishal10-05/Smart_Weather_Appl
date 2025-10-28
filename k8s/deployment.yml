@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: devops-app
-        image: devopsacr.azurecr.io/devops-app:latest
+        image: devopsacr.azurecr.io/smart-weather-app:latest
         ports:
         - containerPort: 3000
