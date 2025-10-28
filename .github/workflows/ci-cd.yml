@@ -33,32 +33,12 @@ jobs:
     - name: Build Docker image
       run: docker build -t smart-weather-app .
 
-    # Step 6: Log in to Azure Container Registry
-    - name: Log in to Azure Container Registry
-      run: |
-        echo ${{ secrets.ACR_PASSWORD }} | docker login devopsacr.azurecr.io -u ${{ secrets.ACR_USERNAME }} --password-stdin
+    # Step 6: Log in to Docker Hub
+    - name: Log in to Docker Hub
+      run: echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
-    # Step 7: Push Docker image to ACR
-    - name: Push Docker image
+    # Step 7: Build and Push Docker image to Docker Hub
+    - name: Build and Push Docker image
       run: |
-        docker tag smart-weather-app devopsacr.azurecr.io/smart-weather-app:latest
-        docker push devopsacr.azurecr.io/smart-weather-app:latest
-
-    # Step 8: Set Kubernetes context for AKS
-    - name: Set AKS context
-      uses: azure/aks-set-context@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-        cluster-name: devops-aks
-        resource-group: devops-rg
-
-    # Step 9: Deploy app to AKS
-    - name: Deploy to AKS
-      run: |
-        kubectl apply -f k8s/deployment.yml
-        kubectl apply -f k8s/service.yml
-
-    # Step 10: Verify deployment rollout
-    - name: Verify deployment
-      run: |
-        kubectl rollout status deployment/devops-app || true
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/smart-weather-app:latest .
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/smart-weather-app:latest

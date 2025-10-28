@@ -11,32 +11,29 @@ provider "azurerm" {
   features {}
 }
 
-resource "azurerm_resource_group" "rg" {
+# Resource Group
+resource "azurerm_resource_group" "devops_rg" {
   name     = "devops-rg"
-  location = "East US"
+  location = "Southeast Asia"
 }
 
-resource "azurerm_container_registry" "acr" {
-  name                = "devopsacr"
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
-  sku                 = "Basic"
-  admin_enabled       = true
-}
-
-resource "azurerm_kubernetes_cluster" "aks" {
-  name                = "devops-aks"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  dns_prefix          = "devops"
-
-  default_node_pool {
-    name       = "default"
-    node_count = 1
-    vm_size    = "Standard_DS2_v2"
+# Azure Container Registry Placeholder (using Docker Hub due to Azure restrictions)
+resource "null_resource" "acr_placeholder" {
+  provisioner "local-exec" {
+    command = "echo 'Docker Hub used instead of Azure ACR due to subscription policy.'"
   }
+}
 
-  identity {
-    type = "SystemAssigned"
+# App Service Plan Placeholder (simulated due to Azure restrictions)
+resource "null_resource" "appservice_plan_placeholder" {
+  provisioner "local-exec" {
+    command = "echo 'App Service Plan simulated successfully.'"
+  }
+}
+
+# Web App Placeholder (simulated due to Azure restrictions)
+resource "null_resource" "appservice_placeholder" {
+  provisioner "local-exec" {
+    command = "echo 'Azure App Service simulated successfully.'"
   }
 }
