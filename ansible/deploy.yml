@@ -3,7 +3,7 @@ name: Build & Deploy to AKS
 on:
   push:
     branches:
-      - main  # Trigger workflow on pushes to main branch
+      - main   # Change if your default branch is different
 
 jobs:
   build-and-deploy:
@@ -36,5 +36,12 @@ jobs:
 
     - name: Deploy to AKS
       run: |
-        kubectl set image deployment/devops-app devops-app=${{ secrets.ACR_NAME }}.azurecr.io/${{ secrets.DOCKER_IMAGE_NAME }}:latest
-        kubectl rollout status deployment/devops-app
+        kubectl apply -f k8s/deployment.yml
+        kubectl apply -f k8s/service.yml
+
+    - name: Wait for AKS deployment rollout
+      run: |
+        kubectl rollout status deployment/${{ secrets.DOCKER_IMAGE_NAME }}
+
+    - name: Deployment complete
+      run: echo "✅ ${{ secrets.DOCKER_IMAGE_NAME }} successfully deployed to AKS"
