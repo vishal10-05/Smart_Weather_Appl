@@ -138,3 +138,4 @@ This project is licensed under the MIT License.
 3. Simulate team collaboration and review process
 4. Merge to main branch after approval
 "# Smart_Weather_App" 
+"// trigger workflow" 
