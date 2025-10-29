@@ -3,7 +3,7 @@ name: Build & Deploy to AKS
 on:
   push:
     branches:
-      - main  # Change if your default branch is different
+      - main  # Trigger workflow on pushes to main branch
 
 jobs:
   build-and-deploy:
@@ -36,5 +36,5 @@ jobs:
 
     - name: Deploy to AKS
       run: |
-        kubectl apply -f k8s/deployment.yml
-        kubectl apply -f k8s/service.yml
+        kubectl set image deployment/devops-app devops-app=${{ secrets.ACR_NAME }}.azurecr.io/${{ secrets.DOCKER_IMAGE_NAME }}:latest
+        kubectl rollout status deployment/devops-app
