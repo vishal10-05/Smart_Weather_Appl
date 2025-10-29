@@ -1,12 +1,40 @@
----
-- name: Deploy Smart Weather App locally
-  hosts: localhost
-  connection: local
-  vars:
-    dockerhub_username: "{{ lookup('env', 'DOCKERHUB_USERNAME') }}"
-  tasks:
-    - name: Pull latest image from Docker Hub
-      command: docker pull {{ dockerhub_username }}/smart-weather-app:latest
+name: Build & Deploy to AKS
 
-    - name: Run container
-      command: docker run -d -p 5000:5000 {{ dockerhub_username }}/smart-weather-app:latest
+on:
+  push:
+    branches:
+      - main  # Change if your default branch is different
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Log in to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Set AKS context
+      run: |
+        az aks get-credentials \
+          --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+          --name ${{ secrets.AKS_CLUSTER_NAME }} \
+          --overwrite-existing
+
+    - name: Build Docker image
+      run: |
+        docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/${{ secrets.DOCKER_IMAGE_NAME }}:latest .
+
+    - name: Push Docker image to ACR
+      run: |
+        az acr login --name ${{ secrets.ACR_NAME }}
+        docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ secrets.DOCKER_IMAGE_NAME }}:latest
+
+    - name: Deploy to AKS
+      run: |
+        kubectl apply -f k8s/deployment.yml
+        kubectl apply -f k8s/service.yml
